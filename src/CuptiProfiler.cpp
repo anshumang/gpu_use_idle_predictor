@@ -19,7 +19,7 @@
 
 #include "CuptiProfiler.h"
 
-CuptiProfiler *p_instance = NULL;
+CuptiProfiler *p_profiler = NULL;
 
 void CUPTIAPI take_buffer(uint8_t **buffer, size_t *size, size_t *max_num_records)
 {
@@ -43,7 +43,7 @@ void CUPTIAPI return_buffer(CUcontext ctx, uint32_t stream_id, uint8_t *buffer, 
     do {
       status = cuptiActivityGetNextRecord(buffer, valid_size, &record);
       if (status == CUPTI_SUCCESS) {
-        p_instance->insert(record);
+        p_profiler->insert(record);
       }
       else if (status == CUPTI_ERROR_MAX_LIMIT_REACHED)
         break;
@@ -67,6 +67,7 @@ void CUPTIAPI return_buffer(CUcontext ctx, uint32_t stream_id, uint8_t *buffer, 
 CuptiProfiler::CuptiProfiler()
   :m_tot_records(0), m_curr_records(0), m_last(0)
 {
+  std::cout << "CuptiProfiler CTOR" << std::endl;
   size_t attr_val_size = sizeof(size_t);
   CUPTI_CALL(cuptiActivityGetAttribute(CUPTI_ACTIVITY_ATTR_DEVICE_BUFFER_SIZE, &attr_val_size, &m_cupti_buffer_size));
   CUPTI_CALL(cuptiActivityGetAttribute(CUPTI_ACTIVITY_ATTR_DEVICE_BUFFER_POOL_LIMIT, &attr_val_size, &m_cupti_buffer_pool_limit));
