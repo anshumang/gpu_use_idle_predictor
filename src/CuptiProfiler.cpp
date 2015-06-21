@@ -75,12 +75,14 @@ CuptiProfiler::CuptiProfiler()
   CUPTI_CALL(cuptiGetTimestamp(&m_start));
   //Enable tracing
   CUPTI_CALL(cuptiActivityEnable(CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL));
+  //CUPTI_CALL(cuptiActivityEnable(CUPTI_ACTIVITY_KIND_RUNTIME));
 }
 
 CuptiProfiler::~CuptiProfiler()
 {
   //Disable tracing
   CUPTI_CALL(cuptiActivityDisable(CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL));
+  //CUPTI_CALL(cuptiActivityDisable(CUPTI_ACTIVITY_KIND_RUNTIME));
 }
 
 void CuptiProfiler::read()
@@ -109,9 +111,15 @@ void CuptiProfiler::insert(CUpti_Activity *record)
       {
       //std::cout << m_curr_records << " " << kernel->end - kernel->start << " " << kernel->start-m_start << " " << kernel->end-m_start << std::endl;
       }
-      //std::cout << kernel->start-m_start << " " << kernel->end-m_start << std::endl;
+      std::cout << kernel->start-m_start - m_last << " " << kernel->end - kernel->start << " " << kernel->gridX << " " << kernel->gridY << " " << kernel->gridZ << " " << kernel->blockX << " " << kernel->blockY << " " << kernel->blockZ << std::endl;
       m_last = kernel->end-m_start;
       m_tup_vec_raw.push_back(curr_tup);
+  }
+  if(record->kind == CUPTI_ACTIVITY_KIND_RUNTIME)
+  {
+      CUpti_ActivityAPI *api = (CUpti_ActivityAPI *) record;
+      std::cout << api->start-m_start - m_last_api << " " << api->end - api->start << std::endl;
+      m_last_api = api->end-m_start;
   }
 }
 
@@ -189,10 +197,10 @@ void CuptiProfiler::process()
    }
    
    count = 0;
-   while(count < disjoint_records)
+   /*while(count < disjoint_records)
    {
       std::cout << count << " " << m_tup_vec[m_tot_disjoint_records+count].second - m_tup_vec[m_tot_disjoint_records+count].first << std::endl;
       count++; 
-   }
+   }*/
    m_tot_disjoint_records+=disjoint_records;
 }

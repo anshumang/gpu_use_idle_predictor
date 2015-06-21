@@ -51,7 +51,7 @@ struct CuptiProfiler
    typedef std::vector< CuptiTuple > CuptiTupleVector;
    CuptiTupleVector m_tup_vec;
    CuptiTupleVector m_tup_vec_raw;
-   unsigned long m_start, m_last;
+   unsigned long m_start, m_last, m_last_api;
    unsigned long m_tot_records, m_curr_records, m_tot_disjoint_records;
    size_t m_cupti_buffer_size, m_cupti_buffer_pool_limit;
    friend void CUPTIAPI return_buffer(CUcontext ctx, uint32_t stream_id, uint8_t *buffer, size_t size, size_t valid_size);
