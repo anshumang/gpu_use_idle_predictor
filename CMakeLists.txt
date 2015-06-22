@@ -12,6 +12,6 @@ project(gpu_use_idle_predictor)
 
 include_directories(include ../include /usr/include /usr/local/cuda/extras/CUPTI/include /usr/include /usr/local/cuda/include)
 
-add_library(gpu_use_idle_predictor SHARED src/Xrush.cpp src/CuptiProfiler.cpp src/Interposer.cpp src/Predictor.cpp src/Window.cpp)
+add_library(gpu_use_idle_predictor SHARED src/Xrush.cpp src/CuptiProfiler.cpp src/Interposer.cpp src/Predictor.cpp src/Window.cpp src/Trigger.cpp)
 
 target_link_libraries(gpu_use_idle_predictor cupti)

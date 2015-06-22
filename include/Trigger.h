@@ -17,30 +17,35 @@
  * Author: Anshuman Goswami <anshumang@gatech.edu>
  */
 
-#include "Predictor.h"
+#ifndef _TRIGGER_H
+#define _TRIGGER_H
 
-Predictor *p_predictor = NULL;
+#include <mutex>
+#include <condition_variable>
+#include <cassert>
 
-Predictor::Predictor(Trigger* trig)
-  : m_trig(trig)
+struct Grid
 {
-   m_thr = std::thread(&Predictor::ProcessTrigger, this);
-}
+   unsigned long x;
+   unsigned long y;
+   unsigned long z;
+   Grid();
+   Grid(unsigned long, unsigned long, unsigned long);
+};
 
-Predictor::~Predictor()
+struct Trigger
 {
+   std::mutex m_lock_1, m_lock_2;
+   std::condition_variable m_notify_1, m_notify_2;
+   bool m_ready_1, m_ready_2;
+   Grid m_grid;
+   Trigger();
+   ~Trigger();
+   void Wait(int);
+   void Notify(int);
+   void WriteData(Grid g);
+   void ReadData(Grid *g);
+};
 
-}
+#endif
 
-void Predictor::ProcessTrigger()
-{
-   while(true)
-   {
-      m_trig->Wait(1);
-      //std::cout << "New trigger received" << std::endl;;
-      Grid g;
-      m_trig->ReadData(&g);
-      std::cout << g.x << " " << g.y << " " << g.z << std::endl;
-      m_trig->Notify(2);
-   }
-}

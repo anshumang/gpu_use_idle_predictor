@@ -21,8 +21,8 @@
 
 Interposer *p_interposer = NULL;
 
-Interposer::Interposer()
-  : m_last(0)
+Interposer::Interposer(Trigger* trig)
+  : m_last(0), m_trig(trig)
 {
   std::cout << "Interposer CTOR" << std::endl;
 }
@@ -37,6 +37,10 @@ void Interposer::launch(unsigned long gridX, unsigned long gridY, unsigned long 
     struct timeval now;
     gettimeofday(&now, NULL);
     unsigned long curr = now.tv_sec*1000000 + now.tv_usec;
-    std::cout << curr - m_last << " " << gridX << " " << gridY << " " << gridZ << " " << blockX << " " << blockY << " " << blockZ << std::endl;
+    //std::cout << curr - m_last << " " << gridX << " " << gridY << " " << gridZ << " " << blockX << " " << blockY << " " << blockZ << std::endl;
     m_last = curr;
+    Grid g(gridX, gridY, gridZ);
+    m_trig->WriteData(g);
+    m_trig->Notify(1);
+    m_trig->Wait(2);
 }

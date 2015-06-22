@@ -20,12 +20,18 @@
 #ifndef _PREDICTOR_H
 #define _PREDICTOR_H
 
+#include <thread>
 #include <cstddef>
+#include <iostream>
+#include "Trigger.h"
 
 struct Predictor
 {
-   Predictor();
+   std::thread m_thr;
+   Trigger* m_trig;
+   Predictor(Trigger* trig);
    ~Predictor();
+   void ProcessTrigger();
 };
 
 #endif

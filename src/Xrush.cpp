@@ -26,14 +26,16 @@ extern CuptiProfiler *p_profiler;
 extern Interposer *p_interposer;
 extern Predictor *p_predictor;
 extern Window *p_window;
+extern Trigger *p_trigger;
 
 extern "C"
 void XrushCreate()
 {
-   p_profiler = new CuptiProfiler();
-   p_interposer = new Interposer();
-   p_predictor = new Predictor();
    p_window = new Window();
+   p_trigger = new Trigger();
+   p_profiler = new CuptiProfiler();
+   p_interposer = new Interposer(p_trigger);
+   p_predictor = new Predictor(p_trigger);
 }
 
 extern "C"

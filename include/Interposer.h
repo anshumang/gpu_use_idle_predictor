@@ -23,11 +23,13 @@
 #include <cstddef>
 #include <iostream>
 #include <sys/time.h>
+#include "Trigger.h"
 
 struct Interposer
 {
    unsigned long m_last;
-   Interposer();
+   Trigger* m_trig;
+   Interposer(Trigger* trig);
    ~Interposer();
    void launch(unsigned long, unsigned long, unsigned long, unsigned long, unsigned long, unsigned long);
 };
