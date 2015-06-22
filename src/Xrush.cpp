@@ -33,17 +33,18 @@ void XrushCreate()
 {
    p_window = new Window();
    p_trigger = new Trigger();
-   p_profiler = new CuptiProfiler();
+   p_profiler = new CuptiProfiler(p_window);
    p_interposer = new Interposer(p_trigger);
-   p_predictor = new Predictor(p_trigger);
+   p_predictor = new Predictor(p_trigger, p_window);
 }
 
 extern "C"
 void XrushDestroy()
 {
+   std::cout << "XrushDestroy" << std::endl;
    delete p_profiler;
    delete p_interposer;
-   delete p_predictor;
+   //delete p_predictor;
    delete p_window;
 }
 

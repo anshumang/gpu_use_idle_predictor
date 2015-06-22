@@ -64,8 +64,8 @@ void CUPTIAPI return_buffer(CUcontext ctx, uint32_t stream_id, uint8_t *buffer, 
   free(buffer);
 }
 
-CuptiProfiler::CuptiProfiler()
-  :m_tot_records(0), m_curr_records(0), m_last(0)
+CuptiProfiler::CuptiProfiler(Window *win)
+  :m_tot_records(0), m_curr_records(0), m_last(0), m_last_api(0), m_tot_disjoint_records(0), m_win(win)
 {
   std::cout << "CuptiProfiler CTOR" << std::endl;
   size_t attr_val_size = sizeof(size_t);
@@ -114,6 +114,8 @@ void CuptiProfiler::insert(CUpti_Activity *record)
       std::cout << kernel->start-m_start - m_last << " " << kernel->end - kernel->start << " " << kernel->gridX << " " << kernel->gridY << " " << kernel->gridZ << " " << kernel->blockX << " " << kernel->blockY << " " << kernel->blockZ << std::endl;
       m_last = kernel->end-m_start;
       m_tup_vec_raw.push_back(curr_tup);
+      Grid g(kernel->gridX, kernel->gridY, kernel->gridZ);
+      m_keyval_vec_raw.push_back(std::make_pair(g, curr_tup));
   }
   if(record->kind == CUPTI_ACTIVITY_KIND_RUNTIME)
   {
@@ -130,6 +132,7 @@ bool CuptiProfiler::cupti_tuple_compare(CuptiTuple& first, CuptiTuple& second)
 
 void CuptiProfiler::process()
 {
+   std::cout << "cupti process begin --->" << m_keyval_vec_raw.size() << " " << m_tup_vec_raw.size() << std::endl;
    /*std::sort(m_tup_vec_raw.begin(), m_tup_vec_raw.end(), [](CuptiTuple& first, CuptiTuple& second)
    {
      return first.first < second.first;
@@ -196,11 +199,52 @@ void CuptiProfiler::process()
      }
    }
    
-   count = 0;
-   /*while(count < disjoint_records)
+   int count1 = 0, count2=0;
+   while(count1 < disjoint_records)
    {
-      std::cout << count << " " << m_tup_vec[m_tot_disjoint_records+count].second - m_tup_vec[m_tot_disjoint_records+count].first << std::endl;
-      count++; 
-   }*/
+      //std::cout << count1 << " " << m_tup_vec[m_tot_disjoint_records+count1].second - m_tup_vec[m_tot_disjoint_records+count1].first << std::endl;
+      //m_tup_vec[m_tot_disjoint_records+count].second
+      if(m_keyval_vec_raw[m_tot_disjoint_records+count2].second.first == m_tup_vec[m_tot_disjoint_records+count1].first)
+      {
+           m_keyval_vec.push_back(std::make_pair(m_keyval_vec_raw[m_tot_disjoint_records+count2].first, m_keyval_vec_raw[m_tot_disjoint_records+count2].second));
+	   count1++;
+           count2++; 
+      }
+      else
+      {
+           count2++;
+      }
+   }
+   /*run another pass to generate (start, end) -> (active, idle)*/
+   count = 0;
+   if(m_tot_disjoint_records > 0)
+   {
+       unsigned long active, idle;
+       unsigned long prev_start, prev_end, curr_start;
+       prev_start = m_keyval_vec[m_tot_disjoint_records-1].second.first;
+       prev_end = m_keyval_vec[m_tot_disjoint_records-1].second.second;
+       curr_start = m_keyval_vec[m_tot_disjoint_records].second.first;
+       active = prev_end - prev_start;
+       idle = curr_start - prev_end;
+       Grid g = m_keyval_vec[m_tot_disjoint_records-1].first;
+       std::cout << "To Window -- " << g.x << " " << g.y << " " << g.z << " " << active << " " << idle << std::endl;
+       CuptiTuple tup(active, idle);
+   }
+   while(count < disjoint_records-1)
+   {
+      int idx = m_tot_disjoint_records+count;
+      unsigned long active, idle;
+      unsigned long curr_start, curr_end, next_start;
+      curr_start = m_keyval_vec[idx].second.first;
+      curr_end = m_keyval_vec[idx].second.second;
+      next_start = m_keyval_vec[idx+1].second.first;
+      active = curr_end - curr_start;
+      idle = next_start - curr_end;
+      Grid g = m_keyval_vec[idx].first;
+      std::cout << "To Window -- " << g.x << " " << g.y << " " << g.z << " " << active << " " << idle << std::endl;
+      CuptiTuple tup(active, idle);
+      count++;
+   }
    m_tot_disjoint_records+=disjoint_records;
+   std::cout << "cupti process end---> " << m_keyval_vec.size() << " " << m_tup_vec.size() << std::endl;
 }

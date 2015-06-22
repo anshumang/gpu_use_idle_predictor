@@ -21,8 +21,8 @@
 
 Predictor *p_predictor = NULL;
 
-Predictor::Predictor(Trigger* trig)
-  : m_trig(trig)
+Predictor::Predictor(Trigger* trig, Window *win)
+  : m_trig(trig), m_win(win)
 {
    m_thr = std::thread(&Predictor::ProcessTrigger, this);
 }

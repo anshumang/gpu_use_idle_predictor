@@ -24,12 +24,14 @@
 #include <cstddef>
 #include <iostream>
 #include "Trigger.h"
+#include "Window.h"
 
 struct Predictor
 {
    std::thread m_thr;
    Trigger* m_trig;
-   Predictor(Trigger* trig);
+   Window* m_win;
+   Predictor(Trigger* trig, Window* m_win);
    ~Predictor();
    void ProcessTrigger();
 };
