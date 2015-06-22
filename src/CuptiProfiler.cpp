@@ -226,9 +226,10 @@ void CuptiProfiler::process()
        curr_start = m_keyval_vec[m_tot_disjoint_records].second.first;
        active = prev_end - prev_start;
        idle = curr_start - prev_end;
-       Grid g = m_keyval_vec[m_tot_disjoint_records-1].first;
-       std::cout << "To Window -- " << g.x << " " << g.y << " " << g.z << " " << active << " " << idle << std::endl;
-       CuptiTuple tup(active, idle);
+       ExperimentalKey k = m_keyval_vec[m_tot_disjoint_records-1].first;
+       std::cout << "To Window -- " << k.x << " " << k.y << " " << k.z << " " << active << " " << idle << std::endl;
+       //CuptiTuple tup(active, idle);
+       m_win->WriteData(k, idle);
    }
    while(count < disjoint_records-1)
    {
@@ -240,9 +241,10 @@ void CuptiProfiler::process()
       next_start = m_keyval_vec[idx+1].second.first;
       active = curr_end - curr_start;
       idle = next_start - curr_end;
-      Grid g = m_keyval_vec[idx].first;
-      std::cout << "To Window -- " << g.x << " " << g.y << " " << g.z << " " << active << " " << idle << std::endl;
-      CuptiTuple tup(active, idle);
+      ExperimentalKey k = m_keyval_vec[idx].first;
+      std::cout << "To Window -- " << k.x << " " << k.y << " " << k.z << " " << active << " " << idle << std::endl;
+      //CuptiTuple tup(active, idle);
+      m_win->WriteData(k, idle);
       count++;
    }
    m_tot_disjoint_records+=disjoint_records;

@@ -30,3 +30,37 @@ Window::~Window()
 {
 
 }
+
+void Window::WriteData(ExperimentalKey k, unsigned long val)
+{
+      auto search = m_table.find(k);
+      if(search == m_table.end())
+      {
+          std::cout << k.x << " " << k.y << " " << k.z << " key not present, adding it and adding value " << val << std::endl;
+          /*if queue not created for this key, create one, add to it and insert it to the table*/
+          MinIdleQueue q;
+          q.push(val);
+          m_table.emplace(std::make_pair(k, q));
+          return;
+      }
+      /*if queue already present, add to it and insert it to the table*/
+      std::cout << k.x << " " << k.y << " " << k.z << " key present, adding it and adding value " << val << std::endl;
+      MinIdleQueue q = search->second;
+      q.push(val);
+      m_table.emplace(std::make_pair(k, q));
+}
+
+unsigned long Window::ReadData(ExperimentalKey k)
+{
+
+}
+
+void Window::Acquire()
+{
+   m_mutex.lock();
+}
+
+void Window::Release()
+{
+   m_mutex.unlock();
+}
