@@ -22,7 +22,7 @@
 Predictor *p_predictor = NULL;
 
 Predictor::Predictor(Trigger* trig, Window *win)
-  : m_trig(trig), m_win(win)
+  : m_trig(trig), m_win(win), m_last(0), m_lib(false), m_start_lib(0), m_end_lib(0)
 {
    m_thr = std::thread(&Predictor::ProcessTrigger, this);
 }
@@ -34,6 +34,7 @@ Predictor::~Predictor()
 
 void Predictor::ProcessTrigger()
 {
+   struct timeval now;
    while(true)
    {
       m_trig->Wait(1);
@@ -42,7 +43,48 @@ void Predictor::ProcessTrigger()
       m_trig->ReadData(&g);
       //std::cout << g.x << " " << g.y << " " << g.z << std::endl;
       m_trig->Notify(2);
-      unsigned long idle = m_win->ReadData(g);
+      if((g.x==0)&&(g.y==0)&&(!m_lib))
+      {
+         /*start library kernels active on GPU*/
+         //std::cout << "XS " << g.x << " " << g.y << " " << g.z << std::endl;
+	 gettimeofday(&now, NULL);
+	 long now_t = now.tv_sec*1000000 + now.tv_usec;
+         m_start_lib = now_t;
+         continue;
+      }
+      else if((g.x==1)&&(g.y==0)&&(!m_lib))
+      {
+         /*end library kernels active on GPU*/
+         //std::cout << "XE " << g.x << " " << g.y << " " << g.z << std::endl;
+	 gettimeofday(&now, NULL);
+	 long now_t = now.tv_sec*1000000 + now.tv_usec;
+         m_end_lib = now_t;
+         m_lib = true;
+         //unsigned long idle = m_win->ReadDataIdle(g);
+         //std::cout << "X 0 " << m_end_lib - m_start_lib << " " << idle << std::endl;
+         continue; 
+      }
+
+      if(m_lib)
+      {
+         //std::cout << "XES " << g.x << " " << g.y << " " << g.z << std::endl;
+	 gettimeofday(&now, NULL);
+	 long now_t = now.tv_sec*1000000 + now.tv_usec;
+         unsigned long idle = now_t - m_end_lib;
+         std::cout << "X 0 " << m_end_lib - m_start_lib << " " << idle << std::endl;
+         Grid gk(0, 0, 0);
+         //m_win->WriteDataIdle(gk, idle);
+         m_lib = false;
+      }
+      
+      unsigned long active = m_win->ReadDataActive(g);
+      unsigned long idle = m_win->ReadDataIdle(g);
       //std::cout << "From Window --- " << g.x << " " << g.y << " " << g.z << " " << idle << std::endl;
+      //std::cout << now_t - m_last << " " << idle << std::endl;
+      //m_last = now_t + idle;
+      
+      std::cout << active << " " << idle << std::endl;
+
+      //m_last = active+idle;
    }
 }

@@ -31,29 +31,29 @@ Window::~Window()
 
 }
 
-void Window::WriteData(ExperimentalKey k, unsigned long val)
+void Window::WriteDataIdle(ExperimentalKey k, unsigned long val)
 {
-      auto search = m_table.find(k);
-      if(search == m_table.end())
+      auto search = m_table_idle.find(k);
+      if(search == m_table_idle.end())
       {
           //std::cout << "[Write] "<< k.x << " " << k.y << " " << k.z << " key not present, adding it and adding value " << val << std::endl;
           /*if queue not created for this key, create one, add to it and insert it to the table*/
           MinIdleQueue q;
           q.push(val);
-          m_table.emplace(std::make_pair(k, q));
+          m_table_idle.emplace(std::make_pair(k, q));
           return;
       }
       /*if queue already present, add to it and insert it to the table*/
       MinIdleQueue q = search->second;
       //std::cout << "[Write] " << k.x << " " << k.y << " " << k.z << " key present, adding it and adding value " << val << " top at " << q.top() << " with size of  " << q.size() << std::endl;
       q.push(val);
-      m_table.erase(search);
-      m_table.emplace(std::make_pair(k, q));
+      m_table_idle.erase(search);
+      m_table_idle.emplace(std::make_pair(k, q));
 
 /*DEBUG*/
 #if 0
-      search = m_table.find(k);
-      if(search == m_table.end())
+      search = m_table_idle.find(k);
+      if(search == m_table_idle.end())
       {
           /*if key not present, assume no idle period available*/
           std::cout << "[Write-Read] " << k.x << " " << k.y << " " << k.z << " key not present with val " << val << " -- this should not happen !" << std::endl;
@@ -66,15 +66,49 @@ void Window::WriteData(ExperimentalKey k, unsigned long val)
 /*DEBUG*/
 }
 
-unsigned long Window::ReadData(ExperimentalKey k)
+void Window::WriteDataActive(ExperimentalKey k, unsigned long val)
 {
-      auto search = m_table.find(k);
-      if(search == m_table.end())
+      auto search = m_table_active.find(k);
+      if(search == m_table_active.end())
+      {
+          //std::cout << "[Write] "<< k.x << " " << k.y << " " << k.z << " key not present, adding it and adding value " << val << std::endl;
+          /*if queue not created for this key, create one, add to it and insert it to the table*/
+          MaxActiveQueue q;
+          q.push(val);
+          m_table_active.emplace(std::make_pair(k, q));
+          return;
+      }
+      /*if queue already present, add to it and insert it to the table*/
+      MaxActiveQueue q = search->second;
+      //std::cout << "[Write] " << k.x << " " << k.y << " " << k.z << " key present, adding it and adding value " << val << " top at " << q.top() << " with size of  " << q.size() << std::endl;
+      q.push(val);
+      m_table_active.erase(search);
+      m_table_active.emplace(std::make_pair(k, q));
+}
+
+unsigned long Window::ReadDataIdle(ExperimentalKey k)
+{
+      auto search = m_table_idle.find(k);
+      if(search == m_table_idle.end())
       {
           /*if key not present, assume no idle period available*/
           return (unsigned long)0;
       }
       MinIdleQueue q = search->second;
+      unsigned long val = q.top();
+      //std::cout << "[Read] " << k.x << " " << k.y << " " << k.z << " key present and value is " << val << " with size of " << q.size() << std::endl;
+      return val;
+}
+
+unsigned long Window::ReadDataActive(ExperimentalKey k)
+{
+      auto search = m_table_active.find(k);
+      if(search == m_table_active.end())
+      {
+          /*if key not present, assume max active period*/
+          return (unsigned long)ULONG_MAX;
+      }
+      MaxActiveQueue q = search->second;
       unsigned long val = q.top();
       //std::cout << "[Read] " << k.x << " " << k.y << " " << k.z << " key present and value is " << val << " with size of " << q.size() << std::endl;
       return val;

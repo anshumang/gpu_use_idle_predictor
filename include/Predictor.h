@@ -23,6 +23,7 @@
 #include <thread>
 #include <cstddef>
 #include <iostream>
+#include <sys/time.h>
 #include "Trigger.h"
 #include "Window.h"
 
@@ -31,7 +32,9 @@ struct Predictor
    std::thread m_thr;
    Trigger* m_trig;
    Window* m_win;
-   Predictor(Trigger* trig, Window* m_win);
+   long m_last, m_start_lib, m_end_lib;
+   bool m_lib;
+   Predictor(Trigger*, Window*);
    ~Predictor();
    void ProcessTrigger();
 };

@@ -24,12 +24,14 @@
 #include <map>
 #include <mutex>
 #include <cstddef>
+#include <climits>
 #include <iostream>
 #include "Trigger.h"
 
 struct Window
 {
    typedef std::priority_queue<unsigned long, std::vector<unsigned long>, std::greater<unsigned long> > MinIdleQueue;
+   typedef std::priority_queue<unsigned long> MaxActiveQueue;
    typedef Grid ExperimentalKey;
    struct ExperimentalKeyCmpFtor
    {
@@ -39,12 +41,16 @@ struct Window
       }
    };
    typedef std::map <ExperimentalKey, MinIdleQueue, ExperimentalKeyCmpFtor> KeyIdleQueueTable;
+   typedef std::map <ExperimentalKey, MaxActiveQueue, ExperimentalKeyCmpFtor> KeyActiveQueueTable;
    std::mutex m_mutex;
-   KeyIdleQueueTable m_table;
+   KeyIdleQueueTable m_table_idle;
+   KeyActiveQueueTable m_table_active;
    Window();
    ~Window();
-   void WriteData(ExperimentalKey k, unsigned long val);
-   unsigned long ReadData(ExperimentalKey k);
+   void WriteDataIdle(ExperimentalKey k, unsigned long val);
+   void WriteDataActive(ExperimentalKey k, unsigned long val);
+   unsigned long ReadDataIdle(ExperimentalKey k);
+   unsigned long ReadDataActive(ExperimentalKey k);
    void Acquire();
    void Release();
 };
