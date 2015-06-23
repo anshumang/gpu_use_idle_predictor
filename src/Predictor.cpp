@@ -40,7 +40,9 @@ void Predictor::ProcessTrigger()
       //std::cout << "New trigger received" << std::endl;;
       Grid g;
       m_trig->ReadData(&g);
-      std::cout << g.x << " " << g.y << " " << g.z << std::endl;
+      //std::cout << g.x << " " << g.y << " " << g.z << std::endl;
       m_trig->Notify(2);
+      unsigned long idle = m_win->ReadData(g);
+      //std::cout << "From Window --- " << g.x << " " << g.y << " " << g.z << " " << idle << std::endl;
    }
 }

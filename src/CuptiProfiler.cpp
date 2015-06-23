@@ -91,7 +91,7 @@ void CuptiProfiler::read()
   m_curr_records=0;
   CUPTI_CALL(cuptiActivityFlushAll(0));
   m_tot_records+=m_curr_records;
-  std::cout << "CuptiProfiler::read " << m_curr_records << "/" << m_tot_records << "/" << m_tot_disjoint_records << std::endl;
+  //std::cout << "CuptiProfiler::read " << m_curr_records << "/" << m_tot_records << "/" << m_tot_disjoint_records << std::endl;
   this->process();
 }
 
@@ -111,7 +111,7 @@ void CuptiProfiler::insert(CUpti_Activity *record)
       {
       //std::cout << m_curr_records << " " << kernel->end - kernel->start << " " << kernel->start-m_start << " " << kernel->end-m_start << std::endl;
       }
-      std::cout << kernel->start-m_start - m_last << " " << kernel->end - kernel->start << " " << kernel->gridX << " " << kernel->gridY << " " << kernel->gridZ << " " << kernel->blockX << " " << kernel->blockY << " " << kernel->blockZ << std::endl;
+      //std::cout << kernel->start-m_start - m_last << " " << kernel->end - kernel->start << " " << kernel->gridX << " " << kernel->gridY << " " << kernel->gridZ << " " << kernel->blockX << " " << kernel->blockY << " " << kernel->blockZ << std::endl;
       m_last = kernel->end-m_start;
       m_tup_vec_raw.push_back(curr_tup);
       Grid g(kernel->gridX, kernel->gridY, kernel->gridZ);
@@ -132,7 +132,7 @@ bool CuptiProfiler::cupti_tuple_compare(CuptiTuple& first, CuptiTuple& second)
 
 void CuptiProfiler::process()
 {
-   std::cout << "cupti process begin --->" << m_keyval_vec_raw.size() << " " << m_tup_vec_raw.size() << std::endl;
+   //std::cout << "cupti process begin --->" << m_keyval_vec_raw.size() << " " << m_tup_vec_raw.size() << std::endl;
    /*std::sort(m_tup_vec_raw.begin(), m_tup_vec_raw.end(), [](CuptiTuple& first, CuptiTuple& second)
    {
      return first.first < second.first;
@@ -227,7 +227,7 @@ void CuptiProfiler::process()
        active = prev_end - prev_start;
        idle = curr_start - prev_end;
        ExperimentalKey k = m_keyval_vec[m_tot_disjoint_records-1].first;
-       std::cout << "To Window -- " << k.x << " " << k.y << " " << k.z << " " << active << " " << idle << std::endl;
+       //std::cout << "To Window -- " << k.x << " " << k.y << " " << k.z << " " << active << " " << idle << std::endl;
        //CuptiTuple tup(active, idle);
        m_win->WriteData(k, idle);
    }
@@ -242,11 +242,11 @@ void CuptiProfiler::process()
       active = curr_end - curr_start;
       idle = next_start - curr_end;
       ExperimentalKey k = m_keyval_vec[idx].first;
-      std::cout << "To Window -- " << k.x << " " << k.y << " " << k.z << " " << active << " " << idle << std::endl;
+      //std::cout << "To Window -- " << k.x << " " << k.y << " " << k.z << " " << active << " " << idle << std::endl;
       //CuptiTuple tup(active, idle);
       m_win->WriteData(k, idle);
       count++;
    }
    m_tot_disjoint_records+=disjoint_records;
-   std::cout << "cupti process end---> " << m_keyval_vec.size() << " " << m_tup_vec.size() << std::endl;
+   //std::cout << "cupti process end---> " << m_keyval_vec.size() << " " << m_tup_vec.size() << std::endl;
 }

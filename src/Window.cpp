@@ -36,7 +36,7 @@ void Window::WriteData(ExperimentalKey k, unsigned long val)
       auto search = m_table.find(k);
       if(search == m_table.end())
       {
-          std::cout << k.x << " " << k.y << " " << k.z << " key not present, adding it and adding value " << val << std::endl;
+          //std::cout << "[Write] "<< k.x << " " << k.y << " " << k.z << " key not present, adding it and adding value " << val << std::endl;
           /*if queue not created for this key, create one, add to it and insert it to the table*/
           MinIdleQueue q;
           q.push(val);
@@ -44,15 +44,40 @@ void Window::WriteData(ExperimentalKey k, unsigned long val)
           return;
       }
       /*if queue already present, add to it and insert it to the table*/
-      std::cout << k.x << " " << k.y << " " << k.z << " key present, adding it and adding value " << val << std::endl;
       MinIdleQueue q = search->second;
+      //std::cout << "[Write] " << k.x << " " << k.y << " " << k.z << " key present, adding it and adding value " << val << " top at " << q.top() << " with size of  " << q.size() << std::endl;
       q.push(val);
+      m_table.erase(search);
       m_table.emplace(std::make_pair(k, q));
+
+/*DEBUG*/
+#if 0
+      search = m_table.find(k);
+      if(search == m_table.end())
+      {
+          /*if key not present, assume no idle period available*/
+          std::cout << "[Write-Read] " << k.x << " " << k.y << " " << k.z << " key not present with val " << val << " -- this should not happen !" << std::endl;
+          return;
+      }
+      q = search->second;
+      unsigned long valr = q.top();
+      std::cout << "[Write-Read] " << k.x << " " << k.y << " " << k.z << " key present and value is " << valr << " with size of " << q.size() << std::endl;
+#endif
+/*DEBUG*/
 }
 
 unsigned long Window::ReadData(ExperimentalKey k)
 {
-
+      auto search = m_table.find(k);
+      if(search == m_table.end())
+      {
+          /*if key not present, assume no idle period available*/
+          return (unsigned long)0;
+      }
+      MinIdleQueue q = search->second;
+      unsigned long val = q.top();
+      //std::cout << "[Read] " << k.x << " " << k.y << " " << k.z << " key present and value is " << val << " with size of " << q.size() << std::endl;
+      return val;
 }
 
 void Window::Acquire()
